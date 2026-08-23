@@ -1,0 +1,19 @@
+'use client';
+import {useMemo,useState} from 'react';
+
+type RefImage={name:string,url:string};
+const styles=['Hollywood Epic','Afro-Cinematic','Gospel Radiance','Neo-Noir','Desert Prophetic','Arena Performance'];
+const shots=['Aerial establishing shot','35mm hero close-up','Handheld performance shot','Slow dolly push-in','Crane reveal','Backlit silhouette','Wide crowd energy','Intimate profile close-up'];
+export default function Home(){
+ const [audio,setAudio]=useState<File|null>(null),[images,setImages]=useState<RefImage[]>([]),[style,setStyle]=useState(styles[0]),[ratio,setRatio]=useState('16:9'),[story,setStory]=useState('A triumphant cinematic journey from darkness into light, driven by the emotion and rhythm of the song.'),[generated,setGenerated]=useState(false);
+ const audioUrl=useMemo(()=>audio?URL.createObjectURL(audio):'', [audio]);
+ function addImages(files:FileList|null){if(!files)return;setImages(p=>[...p,...Array.from(files).map(f=>({name:f.name,url:URL.createObjectURL(f)}))].slice(0,12))}
+ return <main><nav><b>MABRIG <span>VERSE</span></b><div className="pill">AI MUSIC VIDEO STUDIO</div></nav>
+ <section className="hero"><p className="eyebrow">FROM SOUND TO CINEMA</p><h1>Turn your song into a <em>cinematic world.</em></h1><p>Upload MP3/WAV + reference images. Mabrig Verse builds a beat-aware visual treatment, shot plan and production-ready timeline.</p></section>
+ <section className="studio">
+  <div className="panel"><h2>01 · Source</h2><label className="drop"><input type="file" accept="audio/mpeg,audio/wav,.mp3,.wav" onChange={e=>setAudio(e.target.files?.[0]||null)}/><strong>{audio?audio.name:'Drop your master audio'}</strong><small>MP3 or WAV · full-length song</small></label>{audioUrl&&<audio controls src={audioUrl}/>}<label className="drop images"><input type="file" accept="image/*" multiple onChange={e=>addImages(e.target.files)}/><strong>+ Add reference images</strong><small>Artist, wardrobe, locations, mood · up to 12</small></label><div className="refs">{images.map((x,i)=><img key={i} src={x.url} alt={x.name}/>)}</div></div>
+  <div className="panel"><h2>02 · Director</h2><label>Visual language</label><div className="chips">{styles.map(x=><button className={style===x?'on':''} onClick={()=>setStyle(x)} key={x}>{x}</button>)}</div><label>Story / creative direction</label><textarea value={story} onChange={e=>setStory(e.target.value)}/><label>Master format</label><div className="chips">{['16:9','9:16','1:1','2.39:1'].map(x=><button className={ratio===x?'on':''} onClick={()=>setRatio(x)} key={x}>{x}</button>)}</div><button className="generate" disabled={!audio} onClick={()=>setGenerated(true)}>✦ Generate Director's Cut</button><small className="hint">{!audio?'Upload audio to activate the director.':'Creates a local pre-production treatment. AI render providers can be connected next.'}</small></div>
+ </section>
+ {generated&&<section className="output"><div><p className="eyebrow">DIRECTOR'S TREATMENT</p><h2>{style} · {ratio}</h2><p>{story}</p></div><div className="timeline">{shots.map((s,i)=><article key={s}><b>{String(i+1).padStart(2,'0')}</b><div><strong>{s}</strong><p>{i%2?'Performance coverage with motivated camera movement, practical light and rhythmic edit points.':'Narrative coverage using reference-image identity, cinematic depth and music-led transitions.'}</p></div><span>{i*15}s</span></article>)}</div><div className="render"><b>Production pipeline ready</b><span>Audio analysis → scene prompts → image/video generation → continuity → beat edit → color → captions → 4K master</span></div></section>}
+ <footer>MABRIG VERSE · CINEMATIC AI FOR MUSIC</footer></main>
+}
