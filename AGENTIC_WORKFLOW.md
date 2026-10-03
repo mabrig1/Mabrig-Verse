@@ -37,7 +37,7 @@ Routing modes:
 
 ### Provider classes
 
-- **Account quota:** Google Vids and future user-owned included quotas. Google Vids remains separate from Gemini/Veo API billing and requires an authorized connector/local bridge.
+- **Account quota:** Google Vids and future user-owned included quotas. Store the provider's native unit (for example clips or seconds) instead of forcing every plan into generic credits. Google Vids remains separate from Gemini/Veo API billing and requires an authorized connector/local bridge.
 - **Official APIs:** Gemini/Veo and Runway.
 - **Paid gateways:** Eden AI and CometAPI.
 - **Self-hosted:** operator GPU worker for Wan/ComfyUI-class generation, lip sync and FFmpeg.
