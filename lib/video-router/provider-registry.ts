@@ -58,18 +58,20 @@ export const VIDEO_PROVIDER_REGISTRY: ProviderCatalogEntry[] = [
       imageToVideo: true,
       videoToVideo: true,
       audioDriven: false,
+      maxDurationSeconds: 8,
       aspectRatios: ['16:9', '9:16'],
     },
     commercialUse: 'plan-dependent',
     watermark: 'possible',
-    notes: 'Official programmable Google video-generation route. Billing is separate from Google Vids account quota.',
+    notes:
+      'Official programmable Google video-generation route. Billing is separate from Google Vids account quota. The execution adapter requires a server-side price and max-cost ceiling.',
   },
   {
     id: 'runway',
     label: 'Runway API',
     access: 'official-api',
     integration: 'server-api',
-    envKeys: ['RUNWAY_API_KEY'],
+    envKeys: ['RUNWAYML_API_SECRET', 'RUNWAY_ROUTER_CONFIG_ID'],
     enabledByDefault: true,
     priority: 85,
     capabilities: {
@@ -81,7 +83,8 @@ export const VIDEO_PROVIDER_REGISTRY: ProviderCatalogEntry[] = [
     },
     commercialUse: 'plan-dependent',
     watermark: 'possible',
-    notes: 'Official Runway API adapter slot. Website subscription credits and API billing should be tracked separately.',
+    notes:
+      'Official Runway Dev route. The execution adapter uses Model Router dry-run before live submission and treats web-app subscription credits separately from API billing.',
   },
   {
     id: 'eden',
@@ -100,7 +103,8 @@ export const VIDEO_PROVIDER_REGISTRY: ProviderCatalogEntry[] = [
     },
     commercialUse: 'plan-dependent',
     watermark: 'unknown',
-    notes: 'Multi-provider paid fallback. Treat model-specific licence and watermark metadata as dynamic provider state.',
+    notes:
+      'Multi-provider paid fallback. Routing metadata is present, but execution stays disabled until the current API contract and model-specific licence/cost metadata are verified.',
   },
   {
     id: 'comet',
@@ -119,7 +123,8 @@ export const VIDEO_PROVIDER_REGISTRY: ProviderCatalogEntry[] = [
     },
     commercialUse: 'plan-dependent',
     watermark: 'unknown',
-    notes: 'Multi-model paid fallback. Model catalogue, pricing, quota and rights must be refreshed rather than hard-coded.',
+    notes:
+      'Multi-model paid fallback. Routing metadata is present, but execution stays disabled until the current API contract and model-specific licence/cost metadata are verified.',
   },
 ];
 
@@ -130,6 +135,15 @@ function configured(entry: ProviderCatalogEntry): boolean {
   if (entry.id === 'google-vids') {
     return truthy(process.env.GOOGLE_VIDS_BRIDGE_ENABLED);
   }
+
+  if (entry.id === 'runway') {
+    return Boolean(
+      (process.env.RUNWAYML_API_SECRET?.trim() ||
+        process.env.RUNWAY_API_KEY?.trim()) &&
+        process.env.RUNWAY_ROUTER_CONFIG_ID?.trim(),
+    );
+  }
+
   return entry.envKeys.every((key) => Boolean(process.env[key]?.trim()));
 }
 
@@ -141,10 +155,7 @@ export function runtimeStatesFromEnvironment(): ProviderRuntimeState[] {
       configured: isConfigured,
       available: isConfigured,
       healthy: isConfigured,
-      quotaUnit:
-        entry.access === 'self-hosted'
-          ? 'unlimited'
-          : undefined,
+      quotaUnit: entry.access === 'self-hosted' ? 'unlimited' : undefined,
       reason: isConfigured
         ? undefined
         : `Missing configuration for ${entry.label}.`,
