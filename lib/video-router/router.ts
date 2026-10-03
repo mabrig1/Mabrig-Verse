@@ -26,7 +26,10 @@ function providerIsFree(
   ) {
     return true;
   }
-  return (state.estimatedCostUsd ?? 0) <= 0;
+  return (
+    typeof state.estimatedCostUsd === 'number' &&
+    state.estimatedCostUsd <= 0
+  );
 }
 
 function scoreProvider(
@@ -67,7 +70,9 @@ function scoreProvider(
     state.quotaRemaining > 0
   ) {
     score += Math.min(20, Math.log10(state.quotaRemaining + 1) * 10);
-    reasons.push(`${state.quotaRemaining} ${state.quotaUnit ?? 'quota units'} available`);
+    reasons.push(
+      `${state.quotaRemaining} ${state.quotaUnit ?? 'quota units'} available`,
+    );
   }
 
   if (typeof state.latencyMs === 'number') {
@@ -100,9 +105,15 @@ export function routeVideoGeneration(
     if (!state) {
       reasons.push('no runtime state is available');
     } else {
-      if (!state.configured) reasons.push(state.reason || 'provider is not configured');
-      if (!state.available) reasons.push(state.reason || 'provider is unavailable');
-      if (!state.healthy) reasons.push(state.reason || 'provider health check failed');
+      if (!state.configured) {
+        reasons.push(state.reason || 'provider is not configured');
+      }
+      if (!state.available) {
+        reasons.push(state.reason || 'provider is unavailable');
+      }
+      if (!state.healthy) {
+        reasons.push(state.reason || 'provider health check failed');
+      }
     }
 
     if (videoCircuitBreakers.isOpen(provider.id)) {
@@ -111,13 +122,12 @@ export function routeVideoGeneration(
 
     reasons.push(...providerSupportsRequest(provider, request));
 
-    if (
-      provider.access === 'account-quota' &&
-      state &&
-      typeof state.quotaRemaining === 'number' &&
-      state.quotaRemaining <= 0
-    ) {
-      reasons.push('account quota is exhausted');
+    if (provider.access === 'account-quota' && state) {
+      if (typeof state.quotaRemaining !== 'number') {
+        reasons.push('connected account quota has not been measured');
+      } else if (state.quotaRemaining <= 0) {
+        reasons.push('account quota is exhausted');
+      }
     }
 
     if (
@@ -129,19 +139,32 @@ export function routeVideoGeneration(
       );
     }
 
-    const estimatedCostUsd = Math.max(0, state?.estimatedCostUsd ?? 0);
+    const costKnown = typeof state?.estimatedCostUsd === 'number';
+    const estimatedCostUsd = costKnown
+      ? Math.max(0, state!.estimatedCostUsd!)
+      : 0;
     const isFree = state ? providerIsFree(provider.id, state) : false;
+    const isMeteredProvider =
+      provider.access === 'official-api' ||
+      provider.access === 'paid-gateway';
 
     if (request.mode === 'free-only' && !isFree) {
       reasons.push('free-only mode forbids metered provider spend');
     }
 
-    if (estimatedCostUsd > 0 && !request.allowPaidFallback) {
+    if (isMeteredProvider && !costKnown) {
+      reasons.push(
+        'current generation cost has not been estimated; router will not assume a metered API is free',
+      );
+    }
+
+    if (isMeteredProvider && !request.allowPaidFallback) {
       reasons.push('paid fallback is not explicitly enabled');
     }
 
     if (
-      estimatedCostUsd > 0 &&
+      isMeteredProvider &&
+      costKnown &&
       typeof request.maxCostUsd === 'number' &&
       estimatedCostUsd > request.maxCostUsd
     ) {
