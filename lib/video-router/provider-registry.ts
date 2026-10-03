@@ -43,7 +43,7 @@ export const VIDEO_PROVIDER_REGISTRY: ProviderCatalogEntry[] = [
     commercialUse: 'plan-dependent',
     watermark: 'unknown',
     notes:
-      'Represents user-owned Google Vids quota. It is deliberately separate from the Gemini/Veo API and must only be enabled through an authorized connector or local bridge.',
+      'Represents user-owned Google Vids entitlement. Limits vary by account tier and may be expressed as monthly clips or generated seconds rather than a universal credit cost. It is deliberately separate from the Gemini/Veo API and must only be enabled through an authorized connector or local bridge.',
   },
   {
     id: 'gemini-veo',
