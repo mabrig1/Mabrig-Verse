@@ -19,6 +19,7 @@ export type ProviderPreflight = {
   providerId: ExecutionProviderId;
   detail: string;
   estimatedCredits?: number;
+  estimatedCostUsd?: number;
   model?: string;
 };
 
