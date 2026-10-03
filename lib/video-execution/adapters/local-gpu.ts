@@ -36,7 +36,7 @@ function token() {
   return process.env.GPU_WORKER_TOKEN?.trim() || '';
 }
 
-function headers() {
+function headers(): Record<string, string> {
   return token() ? { Authorization: `Bearer ${token()}` } : {};
 }
 
