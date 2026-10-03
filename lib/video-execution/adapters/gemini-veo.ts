@@ -30,6 +30,16 @@ function model() {
   return process.env.GEMINI_VEO_MODEL?.trim() || 'veo-3.1-generate-preview';
 }
 
+function pricePerSecond() {
+  const value = Number(process.env.GEMINI_VEO_USD_PER_SECOND);
+  return Number.isFinite(value) && value > 0 ? value : 0;
+}
+
+function maxCostUsd() {
+  const value = Number(process.env.GEMINI_VEO_MAX_COST_USD);
+  return Number.isFinite(value) && value > 0 ? value : 0;
+}
+
 export const geminiVeoAdapter: VideoExecutionAdapter = {
   providerId: 'gemini-veo',
   metered: true,
@@ -67,11 +77,34 @@ export const geminiVeoAdapter: VideoExecutionAdapter = {
       };
     }
 
+    const unitPrice = pricePerSecond();
+    const ceiling = maxCostUsd();
+    if (!(unitPrice > 0) || !(ceiling > 0)) {
+      return {
+        ok: false,
+        providerId: 'gemini-veo',
+        detail:
+          'Gemini/Veo paid execution requires GEMINI_VEO_USD_PER_SECOND and GEMINI_VEO_MAX_COST_USD so the server can enforce a current spend ceiling instead of assuming pricing.',
+        model: model(),
+      };
+    }
+
+    const estimatedCostUsd = unitPrice * input.durationSeconds;
+    if (estimatedCostUsd > ceiling) {
+      return {
+        ok: false,
+        providerId: 'gemini-veo',
+        detail: `Estimated Veo cost $${estimatedCostUsd.toFixed(2)} exceeds the configured $${ceiling.toFixed(2)} ceiling.`,
+        estimatedCostUsd,
+        model: model(),
+      };
+    }
+
     return {
       ok: true,
       providerId: 'gemini-veo',
-      detail:
-        'Gemini/Veo API is configured. Cost is not guessed locally; paid execution still requires explicit provider approval.',
+      detail: `Gemini/Veo preflight approved at an estimated $${estimatedCostUsd.toFixed(2)} within the server ceiling.`,
+      estimatedCostUsd,
       model: model(),
     };
   },
