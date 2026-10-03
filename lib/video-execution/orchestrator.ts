@@ -150,6 +150,11 @@ export async function executeWithFallback(
           `Runway dry-run estimated ${preflight.estimatedCredits} credits before submission.`,
         );
       }
+      if (providerId === 'gemini-veo' && preflight.estimatedCostUsd) {
+        warnings.push(
+          `Gemini/Veo preflight estimated ${preflight.estimatedCostUsd.toFixed(2)} before submission.`,
+        );
+      }
 
       return {
         missionId: input.missionId,
