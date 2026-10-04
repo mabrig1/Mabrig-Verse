@@ -11,12 +11,12 @@
   },
   "routes": [
     {
-      "pattern": "iavideo.mabrigkorie.org",
+      "pattern": "aivideo.mabrigkorie.org",
       "custom_domain": true
     }
   ],
   "vars": {
-    "NEXT_PUBLIC_APP_URL": "https://iavideo.mabrigkorie.org"
+    "NEXT_PUBLIC_APP_URL": "https://aivideo.mabrigkorie.org"
   },
   "observability": {
     "enabled": true
