@@ -1,4 +1,4 @@
-name: Mabrig Verse CI
+name: AI Video CI
 
 on:
   pull_request:
@@ -11,7 +11,7 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -19,7 +19,7 @@ jobs:
       - name: Use Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
 
       - name: Install dependencies
         run: npm install --no-audit --no-fund
@@ -27,5 +27,8 @@ jobs:
       - name: Typecheck
         run: npx tsc --noEmit
 
-      - name: Build
+      - name: Next.js build
         run: npm run build
+
+      - name: Cloudflare Worker build
+        run: npm run cf:build
