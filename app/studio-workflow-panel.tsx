@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   RENDER_PRESETS,
   addVariant,
@@ -48,6 +48,30 @@ export function StudioWorkflowPanel({
   );
   const [notice, setNotice] = useState('');
   const importRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('ai-video.workflow.latest');
+      if (!saved) return;
+      const restored = validateWorkflow(JSON.parse(saved));
+      setWorkflow(restored);
+      setSelectedSceneId(restored.scenes[0].id);
+      setNotice('Recovered the latest local workflow.');
+    } catch {
+      // Ignore invalid or stale local snapshots.
+    }
+  }, []);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(
+        'ai-video.workflow.latest',
+        JSON.stringify({ ...workflow, updatedAt: new Date().toISOString() }),
+      );
+    } catch {
+      // Local persistence is best-effort only.
+    }
+  }, [workflow]);
 
   const selected = useMemo(
     () =>
@@ -405,7 +429,8 @@ export function StudioWorkflowPanel({
           <p>
             Workflow JSON contains scene order, prompts, source modes, variants,
             provider preferences and render settings. It can be versioned in
-            Git, shared between machines or restored later.
+            Git, shared between machines or restored later. The latest project
+            also autosaves locally in this browser.
           </p>
           <label>Production notes</label>
           <textarea
