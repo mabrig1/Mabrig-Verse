@@ -119,6 +119,6 @@ export function phase1Readiness() {
     total: services.length,
     services,
     domain:
-      process.env.NEXT_PUBLIC_APP_URL || 'https://iavideo.mabrigkorie.org',
+      process.env.NEXT_PUBLIC_APP_URL || 'https://aivideo.mabrigkorie.org',
   };
 }
