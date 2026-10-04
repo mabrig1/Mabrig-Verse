@@ -9,7 +9,7 @@ export async function GET() {
   const status = phase1Readiness();
   return NextResponse.json(
     {
-      app: 'Mabrig Verse',
+      app: 'AI Video',
       phase: 'Phase 1',
       ...status,
       videoRouter: {

@@ -1,4 +1,4 @@
-# Mabrig Verse — Agentic Production & Publishing Workflow
+# AI Video — Agentic Production & Publishing Workflow
 
 ## Goal
 One instruction should be enough: the creator uploads a master MP3/WAV, reference images and a creative brief. The production crew then plans, generates, repairs, masters and distributes the finished music video.
@@ -19,7 +19,7 @@ One instruction should be enough: the creator uploads a master MP3/WAV, referenc
 
 ## Universal video router
 
-The app now includes an agentic routing layer at `/api/video-router`.
+AI Video includes an agentic routing layer at `/api/video-router`.
 
 Every video-generation mission goes through:
 
